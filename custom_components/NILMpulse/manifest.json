@@ -1,9 +1,9 @@
 {
   "domain": "peaksense",
   "name": "PeakSense AI NILM Engine",
-  "codeowners": ["@jouw-github-username"],
+  "codeowners": ["@BryanGeldof"],
   "dependencies": [],
-  "documentation": "https://github.com/jouw-repo/peaksense",
+  "documentation": "https://github.com/BryanGeldof/NILMpulse",
   "iot_class": "local_polling",
   "version": "0.1.0"
 }
