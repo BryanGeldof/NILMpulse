@@ -18,10 +18,12 @@ class NILMpulseConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
                 data=user_input
             )
 
-        # Toon een mooi dropdown-menu in de UI met alle beschikbare stroom-sensoren
+        # Flexibele selector: accepteert nu ELKE sensor (inclusief jouw berekende helper)
         data_schema = vol.Schema({
             vol.Required(CONF_P1_SENSOR): selector.EntitySelector(
-                selector.EntitySelectorConfig(domain="sensor", device_class="power")
+                selector.EntitySelectorConfig(
+                    domain="sensor"
+                )
             ),
         })
 
