@@ -1,73 +1,82 @@
 import logging
 from homeassistant.helpers.entity import Entity
+from homeassistant.helpers.event import async_track_state_change_event
 from .const import DOMAIN, CONF_P1_SENSOR
-from .analyzer import PeakSenseClusterAnalyzer
 
 _LOGGER = logging.getLogger(__name__)
 
 async def async_setup_entry(hass, config_entry, async_add_entities):
     p1_sensor_id = config_entry.data.get(CONF_P1_SENSOR)
-    
-    # Initialiseer de overkoepelende AI engine in de HASS datastructuur
-    if DOMAIN not in hass.data:
-        hass.data[DOMAIN] = {}
-        
-    analyzer = PeakSenseClusterAnalyzer(hass)
-    hass.data[DOMAIN]["analyzer"] = analyzer
+    analyzer = hass.data[DOMAIN]["analyzer"]
 
-    # Voeg de standaard basissensoren toe
-    entities = [
-        PeakSenseUnknownSensor(analyzer, p1_sensor_id),
-        PeakSenseEfficiencySensor(analyzer, p1_sensor_id)
-    ]
-    async_add_entities(entities, update_before_add=True)
+    unknown_sensor = NILMpulseUnknownSensor(analyzer, p1_sensor_id)
+    efficiency_sensor = NILMpulseEfficiencySensor(analyzer, p1_sensor_id)
 
-class PeakSenseUnknownSensor(Entity):
+    async_add_entities([unknown_sensor, efficiency_sensor])
+
+    # Luister live naar de P1 meter updates zonder de boel te blokkeren
+    async def _async_p1_state_changed(event):
+        new_state = event.data.get("new_state")
+        if new_state and new_state.state not in ['unknown', 'unavailable']:
+            try:
+                total_power = float(new_state.state)
+                # Bereken de nieuwe statistieken in de analyzer
+                _, unknown_rest = analyzer.process_reading(total_power)
+                
+                # Push de waarden direct live naar de sensoren
+                unknown_sensor.update_value(unknown_rest)
+                efficiency_sensor.update_value(total_power, unknown_rest)
+            except ValueError:
+                pass
+
+    async_track_state_change_event(hass, [p1_sensor_id], _async_p1_state_changed)
+
+
+class NILMpulseUnknownSensor(Entity):
     def __init__(self, analyzer, p1_sensor_id):
         self._analyzer = analyzer
-        self._p1_sensor_id = p1_sensor_id
         self._state = 0
 
     @property
-    def name(self): return "PeakSense Unknown Restwaarde"
+    def name(self): return "NILMpulse Unknown Restwaarde"
     @property
-    def unique_id(self): return "peaksense_unknown_restwaarde"
+    def unique_id(self): return "nilmpulse_unknown_restwaarde"
     @property
     def state(self): return self._state
     @property
     def unit_of_measurement(self): return "W"
     @property
     def icon(self): return "mdi:help-circle-outline"
+    @property
+    def should_poll(self): return False
 
-    async def async_update(self):
-        # Haal de live waarde op van de gekoppelde P1-meter
-        p1_state = self.hass.states.get(self._p1_sensor_id)
-        if p1_state and p1_state.state not in ['unknown', 'unavailable']:
-            total_power = float(p1_state.state)
-            _, unknown_rest = self._analyzer.process_reading(total_power)
-            self._state = unknown_rest
+    def update_value(self, value):
+        self._state = value
+        self.async_write_ha_state()
 
-class PeakSenseEfficiencySensor(Entity):
+
+class NILMpulseEfficiencySensor(Entity):
     def __init__(self, analyzer, p1_sensor_id):
         self._analyzer = analyzer
-        self._p1_sensor_id = p1_sensor_id
         self._state = 100
 
     @property
-    def name(self): return "PeakSense Deconstructie Efficiëntie"
+    def name(self): return "NILMpulse Deconstructie Efficiëntie"
     @property
-    def unique_id(self): return "peaksense_deconstructie_efficiency"
+    def unique_id(self): return "nilmpulse_deconstructie_efficiency"
     @property
     def state(self): return self._state
     @property
     def unit_of_measurement(self): return "%"
     @property
     def icon(self): return "mdi:shield-check"
+    @property
+    def should_poll(self): return False
 
-    async def async_update(self):
-        p1_state = self.hass.states.get(self._p1_sensor_id)
-        if p1_state and p1_state.state not in ['unknown', 'unavailable']:
-            total_grid = float(p1_state.state)
-            if total_grid > 0:
-                acc = 1 - (self._analyzer.temporary_clusters.get("unknown", {}).get("mean_watt", 0) / (2 * total_grid))
-                self._state = min(100, max(0, round(acc * 100)))
+    def update_value(self, total_grid, unknown_rest):
+        if total_grid > 0:
+            acc = 1 - (unknown_rest / (2 * total_grid))
+            self._state = min(100, max(0, round(acc * 100)))
+        else:
+            self._state = 100
+        self.async_write_ha_state()
