@@ -1,5 +1,6 @@
 {
-  "name": "NILMpulse AI Engine",
+  "name": "NILMpulse Engine",
+  "category": "integration",
   "content_in_root": false,
   "zip_release": false,
   "render_readme": true,
