@@ -1,5 +1,5 @@
 import logging
-import voltuous as vol
+import voluptuous as vol
 from homeassistant.core import HomeAssistant, ServiceCall
 from homeassistant.config_entries import ConfigEntry
 from .const import DOMAIN
