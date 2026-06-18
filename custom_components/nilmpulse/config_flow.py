@@ -3,7 +3,7 @@ from homeassistant import config_entries
 from homeassistant.helpers import selector
 from .const import DOMAIN, CONF_P1_SENSOR
 
-class NILMpulseConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
+class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
     VERSION = 1
 
     async def async_step_user(self, user_input=None):
