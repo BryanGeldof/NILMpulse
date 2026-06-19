@@ -27,14 +27,14 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
         # Automatisch stoppen na 1 uur (60 minuten = 3600 seconden)
         async def auto_stop_boost(_):
             analyzer.set_boost_mode(False)
-            _LOGGER.info("[NILMpulse] Boost-modus automatisch beëindigd na 60 minuten.")
+            _LOGGER.info("[nilmpulse] Boost-modus automatisch beëindigd na 60 minuten.")
         
         from homeassistant.helpers.event import async_call_later
         async_call_later(hass, 3600, auto_stop_boost)
 
     async def stop_boost(call: ServiceCall):
         analyzer.set_boost_mode(False)
-        _LOGGER.info("[NILMpulse] Boost-modus handmatig uitgeschakeld.")
+        _LOGGER.info("[nilmpulse] Boost-modus handmatig uitgeschakeld.")
 
     hass.services.async_register(DOMAIN, "start_boost_mode", start_boost)
     hass.services.async_register(DOMAIN, "stop_boost_mode", stop_boost)
