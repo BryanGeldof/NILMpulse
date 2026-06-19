@@ -1,6 +1,6 @@
 {
   "domain": "nilmpulse",
-  "name": "NILM Engine",
+  "name": "nilm Engine",
   "codeowners": ["@BryanGeldof"],
   "dependencies": [],
   "config_flow": true,
