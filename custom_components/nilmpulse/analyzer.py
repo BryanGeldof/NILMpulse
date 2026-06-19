@@ -23,7 +23,7 @@ class PeakSenseClusterAnalyzer:
     def set_boost_mode(self, active: bool):
         """Schakelt de snelle leermodus in of uit."""
         self.boost_active = active
-        _LOGGER.info(f"[NILMpulse] Boost-modus status gewijzigd naar: {active}")
+        _LOGGER.info(f"[nilmpulse] Boost-modus status gewijzigd naar: {active}")
 
     def _get_suggestion(self, wattage):
         """Zoekt in de matrix naar logische apparaatsuggesties op basis van vermogen."""
@@ -55,7 +55,7 @@ class PeakSenseClusterAnalyzer:
                 # Uitschakeldetectie
                 if delta_p <= -(app["mean_watt"] * (1 - MATCH_TOLERANCE_PERCENT)) and delta_p >= -(app["mean_watt"] * (1 + MATCH_TOLERANCE_PERCENT)):
                     app["active"] = False
-                    _LOGGER.info(f"[NILMpulse] Apparaat uitgeschakeld: {name}")
+                    _LOGGER.info(f"[nilmpulse] Apparaat uitgeschakeld: {name}")
                 else:
                     active_isolated_wattage += app["mean_watt"]
             else:
@@ -63,7 +63,7 @@ class PeakSenseClusterAnalyzer:
                 if delta_p >= (app["mean_watt"] * (1 - MATCH_TOLERANCE_PERCENT)) and delta_p <= (app["mean_watt"] * (1 + MATCH_TOLERANCE_PERCENT)):
                     app["active"] = True
                     active_isolated_wattage += app["mean_watt"]
-                    _LOGGER.info(f"[NILMpulse] Apparaat ingeschakeld: {name}")
+                    _LOGGER.info(f"[nilmpulse] Apparaat ingeschakeld: {name}")
 
         # 3. Bereken restwaarde
         unknown_rest = max(0, current_total - active_isolated_wattage - self.baseload)
@@ -84,7 +84,7 @@ class PeakSenseClusterAnalyzer:
                 data["last_seen"] = time.time()
                 match_found = True
                 
-                _LOGGER.info(f"[NILMpulse] Cluster {cluster_id} herhaald! Teller: {data['count']}")
+                _LOGGER.info(f"[nilmpulse] Cluster {cluster_id} herhaald! Teller: {data['count']}")
                 
                 # Controleer drempelwaarde (of sla over als Boost actief is)
                 target_repetitions = 1 if self.boost_active else MIN_REPETITIONS_FOR_NOTIF
@@ -101,7 +101,7 @@ class PeakSenseClusterAnalyzer:
                 "notified": False,
                 "last_seen": time.time()
             }
-            _LOGGER.info(f"[NILMpulse] Nieuw patroon opgemerkt: {flank_value}W")
+            _LOGGER.info(f"[nilmpulse] Nieuw patroon opgemerkt: {flank_value}W")
             
             # Als Boost aan staat, mag hij direct bij de ALLEREERSTE keer een melding geven!
             if self.boost_active:
@@ -131,7 +131,7 @@ class PeakSenseClusterAnalyzer:
                     "notify",
                     notify_device.split(".")[1],
                     {
-                        "title": "🤖 NILMpulse: Nieuw Apparaat!",
+                        "title": "🤖 nilmpulse: Nieuw Apparaat!",
                         "message": f"Verbruik van {wattage}W ontdekt.\nSuggstie: {suggestion}",
                         "data": {
                             "actions": [
