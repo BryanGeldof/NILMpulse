@@ -10,7 +10,7 @@ class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
         errors = {}
 
         if user_input is not None:
-            return self.async_create_entry(title="NILMpulse AI Engine", data=user_input)
+            return self.async_create_entry(title="nilmpulse AI Engine", data=user_input)
 
         # Haal alle beschikbare notificatie-entiteiten op die met 'notify.mobile_app_' beginnen
         notify_entities = [
